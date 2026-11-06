@@ -19,7 +19,7 @@ jobs:
         echo 'include $(THEOS)/makefiles/common.mk' >> Makefile
         echo 'TWEAK_NAME = FF_Bypass' >> Makefile
         echo 'FF_Bypass_FILES = Tweak.xm' >> Makefile
-        echo 'FF_Bypass_CFLAGS = -fobjc-arc' >> Makefile
+        echo 'FF_Bypass_CFLAGS = -fobjc-arc -Wno-error=deprecated-declarations' >> Makefile
         echo 'include $(THEOS)/makefiles/tweak.mk' >> Makefile
         
         mkdir -p layout/DEBIAN
