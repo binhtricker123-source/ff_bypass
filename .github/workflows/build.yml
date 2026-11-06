@@ -12,24 +12,31 @@ jobs:
         git clone --recursive https://github.com/theos/theos.git $HOME/theos
         echo "THEOS=$HOME/theos" >> $GITHUB_ENV
         echo "$HOME/theos/bin" >> $GITHUB_PATH
-    - name: Create Makefile
+    - name: Create Makefile and Control
       run: |
-        cat <<EOF > Makefile
-        ARCHS = arm64 arm64e
-        TARGET = iphone:clang:latest:14.0
-        include \$(THEOS)/makefiles/common.mk
-        TWEAK_NAME = FF_Bypass
-        FF_Bypass_FILES = Tweak.xm
-        FF_Bypass_CFLAGS = -fobjc-arc
-        include \$(THEOS)/makefiles/tweak.mk
-        EOF
+        echo 'ARCHS = arm64 arm64e' > Makefile
+        echo 'TARGET = iphone:clang:latest:14.0' >> Makefile
+        echo 'include $(THEOS)/makefiles/common.mk' >> Makefile
+        echo 'TWEAK_NAME = FF_Bypass' >> Makefile
+        echo 'FF_Bypass_FILES = Tweak.xm' >> Makefile
+        echo 'FF_Bypass_CFLAGS = -fobjc-arc' >> Makefile
+        echo 'include $(THEOS)/makefiles/tweak.mk' >> Makefile
+        
+        mkdir -p layout/DEBIAN
+        echo 'Package: com.ollie.ffbypass' > layout/DEBIAN/control
+        echo 'Name: FF Bypass' >> layout/DEBIAN/control
+        echo 'Version: 1.0.0' >> layout/DEBIAN/control
+        echo 'Architecture: iphoneos-arm' >> layout/DEBIAN/control
+        echo 'Description: Anti-Cheat Bypass' >> layout/DEBIAN/control
+        echo 'Maintainer: ollie' >> layout/DEBIAN/control
+        echo 'Author: ollie' >> layout/DEBIAN/control
     - name: Build Tweak
       run: make package FINALPACKAGE=1
     - name: Locate and Copy Dylib
       run: |
-        find . -name "*.dylib" -exec cp {} ./FF_Bypass.dylib \;
+        find . -name "FF_Bypass.dylib" -exec cp {} ./FF_Bypass_Final.dylib \;
     - name: Upload Dylib
       uses: actions/upload-artifact@v4
       with:
         name: FF_Bypass_Dylib
-        path: ./FF_Bypass.dylib
+        path: ./FF_Bypass_Final.dylib
