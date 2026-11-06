@@ -12,7 +12,7 @@ jobs:
         git clone --recursive https://github.com/theos/theos.git $HOME/theos
         echo "THEOS=$HOME/theos" >> $GITHUB_ENV
         echo "$HOME/theos/bin" >> $GITHUB_PATH
-    - name: Create Makefile and Control
+    - name: Create Makefile
       run: |
         echo 'ARCHS = arm64 arm64e' > Makefile
         echo 'TARGET = iphone:clang:latest:14.0' >> Makefile
@@ -21,21 +21,8 @@ jobs:
         echo 'FF_Bypass_FILES = Tweak.xm' >> Makefile
         echo 'FF_Bypass_CFLAGS = -fobjc-arc -Wno-error=deprecated-declarations' >> Makefile
         echo 'include $(THEOS)/makefiles/tweak.mk' >> Makefile
-        
-        mkdir -p layout/DEBIAN
-        echo 'Package: com.ollie.ffbypass' > layout/DEBIAN/control
-        echo 'Name: FF Bypass' >> layout/DEBIAN/control
-        echo 'Version: 1.0.0' >> layout/DEBIAN/control
-        echo 'Architecture: iphoneos-arm' >> layout/DEBIAN/control
-        echo 'Description: Anti-Cheat Bypass' >> layout/DEBIAN/control
-        echo 'Maintainer: ollie' >> layout/DEBIAN/control
-        echo 'Author: ollie' >> layout/DEBIAN/control
-    - name: Generate Plist to bypass stage error
-      run: |
-        mkdir -p layout/Library/MobileSubstrate/DynamicLibraries
-        touch layout/Library/MobileSubstrate/DynamicLibraries/FF_Bypass.plist
-    - name: Build Tweak
-      run: make package FINALPACKAGE=1
+    - name: Build Tweak Only (No Package)
+      run: make
     - name: Locate and Copy Dylib
       run: |
         find . -name "FF_Bypass.dylib" -exec cp {} ./FF_Bypass_Final.dylib \;
