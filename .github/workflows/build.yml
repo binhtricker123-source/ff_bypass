@@ -5,24 +5,31 @@ jobs:
     runs-on: macos-latest
     steps:
     - uses: actions/checkout@v4
-    - name: Install Theos
+    - name: Install Dependencies
+      run: brew install ldid dpkg
+    - name: Setup Theos
       run: |
         git clone --recursive https://github.com/theos/theos.git $HOME/theos
         echo "THEOS=$HOME/theos" >> $GITHUB_ENV
         echo "$HOME/theos/bin" >> $GITHUB_PATH
     - name: Create Makefile
       run: |
-        echo 'ARCHS = arm64 arm64e' > Makefile
-        echo 'TARGET = iphone:clang:latest:14.0' >> Makefile
-        echo 'include $(THEOS)/makefiles/common.mk' >> Makefile
-        echo 'TWEAK_NAME = FF_Bypass' >> Makefile
-        echo 'FF_Bypass_FILES = Tweak.xm' >> Makefile
-        echo 'FF_Bypass_CFLAGS = -fobjc-arc' >> Makefile
-        echo 'include $(THEOS)/makefiles/tweak.mk' >> Makefile
+        cat <<EOF > Makefile
+        ARCHS = arm64 arm64e
+        TARGET = iphone:clang:latest:14.0
+        include \$(THEOS)/makefiles/common.mk
+        TWEAK_NAME = FF_Bypass
+        FF_Bypass_FILES = Tweak.xm
+        FF_Bypass_CFLAGS = -fobjc-arc
+        include \$(THEOS)/makefiles/tweak.mk
+        EOF
     - name: Build Tweak
       run: make package FINALPACKAGE=1
+    - name: Locate and Copy Dylib
+      run: |
+        find . -name "*.dylib" -exec cp {} ./FF_Bypass.dylib \;
     - name: Upload Dylib
       uses: actions/upload-artifact@v4
       with:
         name: FF_Bypass_Dylib
-        path: .theos/obj/debug/FF_Bypass.dylib
+        path: ./FF_Bypass.dylib
