@@ -30,6 +30,10 @@ jobs:
         echo 'Description: Anti-Cheat Bypass' >> layout/DEBIAN/control
         echo 'Maintainer: ollie' >> layout/DEBIAN/control
         echo 'Author: ollie' >> layout/DEBIAN/control
+    - name: Generate Plist to bypass stage error
+      run: |
+        mkdir -p layout/Library/MobileSubstrate/DynamicLibraries
+        touch layout/Library/MobileSubstrate/DynamicLibraries/FF_Bypass.plist
     - name: Build Tweak
       run: make package FINALPACKAGE=1
     - name: Locate and Copy Dylib
