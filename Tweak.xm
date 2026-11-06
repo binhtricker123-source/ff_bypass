@@ -1,7 +1,7 @@
 #import <Foundation/Foundation.h>
 #import <Security/Security.h>
-#import <sys/ptrace.h>
 #import <substrate.h>
+#import <dlfcn.h>
 
 OSStatus SecTrustEvaluate_hook(SecTrustRef trust, SecTrustResultType *result) {
     if (result) *result = kSecTrustResultProceed;
@@ -23,7 +23,14 @@ int new_ptrace(int request, pid_t pid, caddr_t addr, int data) {
 %end
 
 %ctor {
+    // Bypass SSL
     MSHookFunction((void *)SecTrustEvaluate, (void *)SecTrustEvaluate_hook, NULL);
-    MSHookFunction((void *)ptrace, (void *)new_ptrace, (void **)&orig_ptrace);
+    
+    // Bypass ptrace (dùng dlsym để tìm hàm ẩn)
+    void *ptrace_sym = dlsym(RTLD_DEFAULT, "ptrace");
+    if (ptrace_sym) {
+        MSHookFunction(ptrace_sym, (void *)new_ptrace, (void **)&orig_ptrace);
+    }
+    
     NSLog(@"[FF] Loaded Anti-Cheat Bypass!");
 }
